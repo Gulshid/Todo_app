@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:todo/src/bloc/theme_bloc.dart';
 import 'package:todo/src/bloc/todo_bloc.dart';
 import 'package:todo/src/bloc/todo_event.dart';
 import 'package:todo/src/bloc/todo_state.dart';
 import 'package:todo/src/core/model/category_model.dart';
 import 'package:todo/src/widgets/add_todo_sheet.dart';
 import 'package:todo/src/widgets/todo_item.dart';
-
 
 class TodoPage extends StatefulWidget {
   const TodoPage({super.key});
@@ -138,9 +138,8 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
                       builder: (context, state) {
                         String title = 'All Tasks';
                         if (state is TodoLoaded) {
-                          if (state.activeIsStarred == true) {
-                            title = 'Starred';
-                          } else if (state.activeIsDone == true) title = 'Completed';
+                          if (state.activeIsStarred == true) title = 'Starred';
+                          else if (state.activeIsDone == true) title = 'Completed';
                           else if (state.activeIsDone == false) title = 'Active';
                           else if (state.activeCategoryId != null) {
                             final cat = state.categories
@@ -619,7 +618,7 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
                   title: Text(isDark ? 'Light Mode' : 'Dark Mode'),
                   onTap: () {
                     Navigator.pop(context);
-                    // ThemeBloc would handle this in a real app
+                    context.read<ThemeBloc>().add(ToggleTheme());
                   },
                 ),
               ],
