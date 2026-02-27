@@ -9,6 +9,7 @@ import 'package:todo/src/bloc/todo_event.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // No manual DB factory init needed — sembast handles all platforms
   runApp(const MyApp());
 }
 

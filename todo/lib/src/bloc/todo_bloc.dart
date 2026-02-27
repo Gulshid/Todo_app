@@ -29,6 +29,7 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
     on<SetFilter>(_setFilter);
   }
 
+  // ignore: unused_element
   Future<(List<dynamic>, List<dynamic>, Map<String, int>)> _fetchAll({
     int? categoryId,
     bool? isDone,

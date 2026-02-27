@@ -1,261 +1,261 @@
-import 'package:sqflite/sqflite.dart';
+import 'package:flutter/foundation.dart' hide Category;
 import 'package:path/path.dart';
-import '../model/todo_model.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:sembast/sembast.dart';
+import 'package:sembast/sembast_io.dart';
+import 'package:sembast_web/sembast_web.dart';
+import 'package:sqflite/sqflite.dart' show getDatabasesPath;
 import '../model/category_model.dart';
+import '../model/todo_model.dart';
 
 class DBHelper {
   static Database? _db;
 
+  // ── Stores (like tables) ─────────────────────────────────────────────────
+  final _todoStore    = intMapStoreFactory.store('todos');
+  final _categoryStore = intMapStoreFactory.store('categories');
+  final _subtaskStore  = intMapStoreFactory.store('subtasks');
+
+  // ── Open DB ──────────────────────────────────────────────────────────────
   Future<Database> get database async {
     if (_db != null) return _db!;
-    _db = await _initDB();
+    _db = await _openDb();
+    await _seedCategories(_db!);
     return _db!;
   }
 
-  Future<Database> _initDB() async {
-    final path = join(await getDatabasesPath(), 'taskmaster.db');
-    return await openDatabase(
-      path,
-      version: 2,
-      onCreate: _onCreate,
-      onUpgrade: _onUpgrade,
-    );
+  Future<Database> _openDb() async {
+    if (kIsWeb) {
+      return databaseFactoryWeb.openDatabase('taskmaster.db');
+    }
+    // Mobile & Desktop — use file path
+    late String dir;
+    try {
+      dir = await getDatabasesPath();
+    } catch (_) {
+      final appDir = await getApplicationDocumentsDirectory();
+      dir = appDir.path;
+    }
+    return databaseFactoryIo.openDatabase(join(dir, 'taskmaster.db'));
   }
 
-  Future<void> _onCreate(Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE categories(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        colorValue INTEGER NOT NULL,
-        iconCodePoint INTEGER NOT NULL
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE todos(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        description TEXT,
-        isDone INTEGER DEFAULT 0,
-        priority INTEGER DEFAULT 0,
-        categoryId INTEGER,
-        dueDate TEXT,
-        isStarred INTEGER DEFAULT 0,
-        tags TEXT DEFAULT '',
-        createdAt TEXT NOT NULL,
-        FOREIGN KEY (categoryId) REFERENCES categories(id) ON DELETE SET NULL
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE subtasks(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        todoId INTEGER NOT NULL,
-        title TEXT NOT NULL,
-        isDone INTEGER DEFAULT 0,
-        FOREIGN KEY (todoId) REFERENCES todos(id) ON DELETE CASCADE
-      )
-    ''');
-
-    // Insert default categories
-    for (final cat in defaultCategories) {
-      await db.insert('categories', cat.toMap()..remove('id'));
+  Future<void> _seedCategories(Database db) async {
+    final count = await _categoryStore.count(db);
+    if (count == 0) {
+      for (final cat in defaultCategories) {
+        await _categoryStore.add(db, {
+          'name': cat.name,
+          'colorValue': cat.colorValue,
+          'iconCodePoint': cat.iconCodePoint,
+        });
+      }
     }
   }
 
-  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 2) {
-      // Migrate from v1
-      try {
-        await db.execute('ALTER TABLE todos ADD COLUMN description TEXT');
-        await db.execute('ALTER TABLE todos ADD COLUMN priority INTEGER DEFAULT 0');
-        await db.execute('ALTER TABLE todos ADD COLUMN categoryId INTEGER');
-        await db.execute('ALTER TABLE todos ADD COLUMN dueDate TEXT');
-        await db.execute('ALTER TABLE todos ADD COLUMN isStarred INTEGER DEFAULT 0');
-        await db.execute('ALTER TABLE todos ADD COLUMN tags TEXT DEFAULT ""');
-        await db.execute('ALTER TABLE todos ADD COLUMN createdAt TEXT');
-        await db.execute('''
-          CREATE TABLE IF NOT EXISTS categories(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            colorValue INTEGER NOT NULL,
-            iconCodePoint INTEGER NOT NULL
-          )
-        ''');
-        await db.execute('''
-          CREATE TABLE IF NOT EXISTS subtasks(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            todoId INTEGER NOT NULL,
-            title TEXT NOT NULL,
-            isDone INTEGER DEFAULT 0
-          )
-        ''');
-        for (final cat in defaultCategories) {
-          await db.insert('categories', cat.toMap()..remove('id'));
-        }
-      } catch (_) {}
-    }
-  }
-
-  // ── CATEGORIES ─────────────────────────────────────────────────────────────
+  // ── CATEGORIES ────────────────────────────────────────────────────────────
 
   Future<List<Category>> getCategories() async {
     final db = await database;
-    final res = await db.query('categories', orderBy: 'name ASC');
-    return res.map((e) => Category.fromMap(e)).toList();
+    final records = await _categoryStore.find(db,
+        finder: Finder(sortOrders: [SortOrder('name')]));
+    return records
+        .map((r) => Category.fromMap({...r.value, 'id': r.key}))
+        .toList();
   }
 
   Future<int> insertCategory(Category cat) async {
     final db = await database;
-    return db.insert('categories', cat.toMap()..remove('id'));
+    return _categoryStore.add(db, {
+      'name': cat.name,
+      'colorValue': cat.colorValue,
+      'iconCodePoint': cat.iconCodePoint,
+    });
   }
 
   Future<void> updateCategory(Category cat) async {
     final db = await database;
-    await db.update('categories', cat.toMap(),
-        where: 'id = ?', whereArgs: [cat.id]);
+    await _categoryStore.record(cat.id!).update(db, {
+      'name': cat.name,
+      'colorValue': cat.colorValue,
+      'iconCodePoint': cat.iconCodePoint,
+    });
   }
 
   Future<void> deleteCategory(int id) async {
     final db = await database;
-    await db.delete('categories', where: 'id = ?', whereArgs: [id]);
+    await _categoryStore.record(id).delete(db);
+    // Clear categoryId on todos that used this category
+    final todos = await _todoStore.find(db,
+        finder: Finder(filter: Filter.equals('categoryId', id)));
+    for (final t in todos) {
+      await _todoStore.record(t.key).update(db, {'categoryId': null});
+    }
   }
 
-  // ── TODOS ───────────────────────────────────────────────────────────────────
+  // ── TODOS ─────────────────────────────────────────────────────────────────
 
-  Future<List<Todo>> getTodos({int? categoryId, bool? isDone, bool? isStarred}) async {
+  Future<List<Todo>> getTodos({
+    int? categoryId,
+    bool? isDone,
+    bool? isStarred,
+  }) async {
     final db = await database;
 
-    final whereClauses = <String>[];
-    final whereArgs = <dynamic>[];
+    final filters = <Filter>[];
+    if (categoryId != null) filters.add(Filter.equals('categoryId', categoryId));
+    if (isDone != null)     filters.add(Filter.equals('isDone', isDone));
+    if (isStarred == true)  filters.add(Filter.equals('isStarred', true));
 
-    if (categoryId != null) {
-      whereClauses.add('t.categoryId = ?');
-      whereArgs.add(categoryId);
-    }
-    if (isDone != null) {
-      whereClauses.add('t.isDone = ?');
-      whereArgs.add(isDone ? 1 : 0);
-    }
-    if (isStarred != null && isStarred) {
-      whereClauses.add('t.isStarred = 1');
-    }
+    final finder = Finder(
+      filter: filters.isEmpty ? null : Filter.and(filters),
+      sortOrders: [
+        SortOrder('isStarred', false),
+        SortOrder('priority', false),
+        SortOrder('createdAt', false),
+      ],
+    );
 
-    final whereString =
-        whereClauses.isNotEmpty ? 'WHERE ${whereClauses.join(' AND ')}' : '';
-
-    final res = await db.rawQuery(
-        'SELECT t.* FROM todos t $whereString ORDER BY t.isStarred DESC, t.priority DESC, t.createdAt DESC',
-        whereArgs.isNotEmpty ? whereArgs : null);
-
+    final records = await _todoStore.find(db, finder: finder);
     final todos = <Todo>[];
-    for (final row in res) {
-      final todo = Todo.fromMap(row);
-      final subs = await _getSubtasks(todo.id!);
-      todos.add(todo.copyWith(subtasks: subs));
+    for (final r in records) {
+      final subs = await _getSubtasks(db, r.key);
+      todos.add(Todo.fromMap({...r.value, 'id': r.key})
+          .copyWith(subtasks: subs));
     }
     return todos;
   }
 
   Future<List<Todo>> searchTodos(String query) async {
     final db = await database;
-    final res = await db.query(
-      'todos',
-      where: 'title LIKE ? OR description LIKE ? OR tags LIKE ?',
-      whereArgs: ['%$query%', '%$query%', '%$query%'],
-      orderBy: 'createdAt DESC',
-    );
+    final q = query.toLowerCase();
+    final records = await _todoStore.find(db,
+        finder: Finder(sortOrders: [SortOrder('createdAt', false)]));
     final todos = <Todo>[];
-    for (final row in res) {
-      final todo = Todo.fromMap(row);
-      final subs = await _getSubtasks(todo.id!);
-      todos.add(todo.copyWith(subtasks: subs));
+    for (final r in records) {
+      final map = {...r.value, 'id': r.key};
+      if ((map['title'] as String? ?? '').toLowerCase().contains(q) ||
+          (map['description'] as String? ?? '').toLowerCase().contains(q) ||
+          (map['tags'] as String? ?? '').toLowerCase().contains(q)) {
+        final subs = await _getSubtasks(db, r.key);
+        todos.add(Todo.fromMap(map).copyWith(subtasks: subs));
+      }
     }
     return todos;
   }
 
   Future<Map<String, int>> getStats() async {
     final db = await database;
-    final total = Sqflite.firstIntValue(
-            await db.rawQuery('SELECT COUNT(*) FROM todos')) ??
-        0;
-    final done = Sqflite.firstIntValue(
-            await db.rawQuery('SELECT COUNT(*) FROM todos WHERE isDone = 1')) ??
-        0;
-    final overdue = Sqflite.firstIntValue(await db.rawQuery(
-            "SELECT COUNT(*) FROM todos WHERE isDone = 0 AND dueDate IS NOT NULL AND dueDate < ?",
-            [DateTime.now().toIso8601String()])) ??
-        0;
-    final today = Sqflite.firstIntValue(await db.rawQuery(
-            "SELECT COUNT(*) FROM todos WHERE isDone = 0 AND dueDate LIKE ?",
-            ['${DateTime.now().toIso8601String().substring(0, 10)}%'])) ??
-        0;
+    final all    = await _todoStore.count(db);
+    final done   = await _todoStore.count(db,
+        filter: Filter.equals('isDone', true));
+    final nowStr = DateTime.now().toIso8601String();
+    final todayPrefix = nowStr.substring(0, 10);
+
+    // overdue: not done + dueDate < today
+    final allRecords = await _todoStore.find(db);
+    int overdue = 0, today = 0;
+    for (final r in allRecords) {
+      if (r.value['isDone'] == true) continue;
+      final due = r.value['dueDate'] as String?;
+      if (due == null) continue;
+      if (due.compareTo(nowStr) < 0 && !due.startsWith(todayPrefix)) overdue++;
+      if (due.startsWith(todayPrefix)) today++;
+    }
+
     return {
-      'total': total,
-      'done': done,
-      'pending': total - done,
+      'total':   all,
+      'done':    done,
+      'pending': all - done,
       'overdue': overdue,
-      'today': today,
+      'today':   today,
     };
   }
 
   Future<int> insertTodo(Todo todo) async {
     final db = await database;
-    final id = await db.insert('todos', todo.toMap()..remove('id'));
+    final id = await _todoStore.add(db, _todoToMap(todo));
     for (final sub in todo.subtasks) {
-      await db.insert('subtasks', sub.copyWith(todoId: id).toMap()..remove('id'));
+      await _subtaskStore.add(db, {
+        'todoId': id,
+        'title': sub.title,
+        'isDone': sub.isDone,
+      });
     }
     return id;
   }
 
   Future<void> updateTodo(Todo todo) async {
     final db = await database;
-    await db.update('todos', todo.toMap(),
-        where: 'id = ?', whereArgs: [todo.id]);
+    await _todoStore.record(todo.id!).update(db, _todoToMap(todo));
     // Refresh subtasks
-    await db.delete('subtasks', where: 'todoId = ?', whereArgs: [todo.id]);
+    final old = await _subtaskStore.find(db,
+        finder: Finder(filter: Filter.equals('todoId', todo.id)));
+    for (final s in old) await _subtaskStore.record(s.key).delete(db);
     for (final sub in todo.subtasks) {
-      await db.insert(
-          'subtasks', sub.copyWith(todoId: todo.id).toMap()..remove('id'));
+      await _subtaskStore.add(db, {
+        'todoId': todo.id,
+        'title':  sub.title,
+        'isDone': sub.isDone,
+      });
     }
   }
 
   Future<void> deleteTodo(int id) async {
     final db = await database;
-    await db.delete('todos', where: 'id = ?', whereArgs: [id]);
-    await db.delete('subtasks', where: 'todoId = ?', whereArgs: [id]);
+    await _todoStore.record(id).delete(db);
+    final subs = await _subtaskStore.find(db,
+        finder: Finder(filter: Filter.equals('todoId', id)));
+    for (final s in subs) await _subtaskStore.record(s.key).delete(db);
   }
 
   Future<void> toggleTodoDone(int id, bool isDone) async {
     final db = await database;
-    await db.update('todos', {'isDone': isDone ? 1 : 0},
-        where: 'id = ?', whereArgs: [id]);
+    await _todoStore.record(id).update(db, {'isDone': isDone});
   }
 
   Future<void> toggleStar(int id, bool isStarred) async {
     final db = await database;
-    await db.update('todos', {'isStarred': isStarred ? 1 : 0},
-        where: 'id = ?', whereArgs: [id]);
+    await _todoStore.record(id).update(db, {'isStarred': isStarred});
   }
 
   Future<void> deleteCompleted() async {
     final db = await database;
-    await db.delete('todos', where: 'isDone = 1');
+    final done = await _todoStore.find(db,
+        finder: Finder(filter: Filter.equals('isDone', true)));
+    for (final r in done) {
+      await _todoStore.record(r.key).delete(db);
+      final subs = await _subtaskStore.find(db,
+          finder: Finder(filter: Filter.equals('todoId', r.key)));
+      for (final s in subs) await _subtaskStore.record(s.key).delete(db);
+    }
   }
 
-  // ── SUBTASKS ────────────────────────────────────────────────────────────────
+  // ── SUBTASKS ──────────────────────────────────────────────────────────────
 
-  Future<List<SubTask>> _getSubtasks(int todoId) async {
-    final db = await database;
-    final res = await db.query('subtasks',
-        where: 'todoId = ?', whereArgs: [todoId]);
-    return res.map((e) => SubTask.fromMap(e)).toList();
+  Future<List<SubTask>> _getSubtasks(Database db, int todoId) async {
+    final records = await _subtaskStore.find(db,
+        finder: Finder(filter: Filter.equals('todoId', todoId)));
+    return records
+        .map((r) => SubTask.fromMap({...r.value, 'id': r.key, 'todoId': todoId}))
+        .toList();
   }
 
   Future<void> toggleSubtask(int subtaskId, bool isDone) async {
     final db = await database;
-    await db.update('subtasks', {'isDone': isDone ? 1 : 0},
-        where: 'id = ?', whereArgs: [subtaskId]);
+    await _subtaskStore.record(subtaskId).update(db, {'isDone': isDone});
   }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
+  Map<String, dynamic> _todoToMap(Todo todo) => {
+        'title':       todo.title,
+        'description': todo.description,
+        'isDone':      todo.isDone,
+        'priority':    todo.priority.value,
+        'categoryId':  todo.categoryId,
+        'dueDate':     todo.dueDate?.toIso8601String(),
+        'isStarred':   todo.isStarred,
+        'tags':        todo.tags,
+        'createdAt':   todo.createdAt.toIso8601String(),
+      };
 }

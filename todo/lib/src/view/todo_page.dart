@@ -5,7 +5,6 @@ import 'package:todo/src/bloc/todo_bloc.dart';
 import 'package:todo/src/bloc/todo_event.dart';
 import 'package:todo/src/bloc/todo_state.dart';
 import 'package:todo/src/core/model/category_model.dart';
-import 'package:todo/src/core/model/todo_model.dart';
 import 'package:todo/src/widgets/add_todo_sheet.dart';
 import 'package:todo/src/widgets/todo_item.dart';
 
