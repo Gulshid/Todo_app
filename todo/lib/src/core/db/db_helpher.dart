@@ -190,7 +190,9 @@ class DBHelper {
     // Refresh subtasks
     final old = await _subtaskStore.find(db,
         finder: Finder(filter: Filter.equals('todoId', todo.id)));
-    for (final s in old) await _subtaskStore.record(s.key).delete(db);
+    for (final s in old) {
+      await _subtaskStore.record(s.key).delete(db);
+    }
     for (final sub in todo.subtasks) {
       await _subtaskStore.add(db, {
         'todoId': todo.id,
@@ -205,7 +207,9 @@ class DBHelper {
     await _todoStore.record(id).delete(db);
     final subs = await _subtaskStore.find(db,
         finder: Finder(filter: Filter.equals('todoId', id)));
-    for (final s in subs) await _subtaskStore.record(s.key).delete(db);
+    for (final s in subs) {
+      await _subtaskStore.record(s.key).delete(db);
+    }
   }
 
   Future<void> toggleTodoDone(int id, bool isDone) async {
@@ -226,7 +230,9 @@ class DBHelper {
       await _todoStore.record(r.key).delete(db);
       final subs = await _subtaskStore.find(db,
           finder: Finder(filter: Filter.equals('todoId', r.key)));
-      for (final s in subs) await _subtaskStore.record(s.key).delete(db);
+      for (final s in subs) {
+        await _subtaskStore.record(s.key).delete(db);
+      }
     }
   }
 

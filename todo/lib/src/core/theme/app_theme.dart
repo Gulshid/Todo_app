@@ -76,11 +76,14 @@ class AppTheme {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           side: BorderSide.none,
         ),
-        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
           backgroundColor: _primaryColor,
           foregroundColor: Colors.white,
           elevation: 4,
-          shape: CircleBorder(),
+          extendedPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(100),
+          ),
         ),
       );
 
@@ -142,11 +145,14 @@ class AppTheme {
             textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
           ),
         ),
-        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
           backgroundColor: _primaryColor,
           foregroundColor: Colors.white,
           elevation: 4,
-          shape: CircleBorder(),
+          extendedPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(100),
+          ),
         ),
       );
 }

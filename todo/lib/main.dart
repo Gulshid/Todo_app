@@ -6,6 +6,7 @@ import 'package:todo/src/bloc/todo_bloc.dart';
 import 'package:todo/src/bloc/todo_event.dart';
 import 'package:todo/src/core/db/db_helpher.dart';
 import 'package:todo/src/core/theme/app_theme.dart';
+import 'package:todo/src/view/Splash.dart';
 import 'package:todo/src/view/todo_page.dart';
 
 void main() async {
@@ -38,7 +39,7 @@ class MyApp extends StatelessWidget {
                     theme: AppTheme.lightTheme,
                     darkTheme: AppTheme.darkTheme,
                     themeMode: themeState.themeMode,
-                    home: const TodoPage(),
+                    home: const SplashScreen(),
                   );
                 },
               );

@@ -138,8 +138,9 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
                       builder: (context, state) {
                         String title = 'All Tasks';
                         if (state is TodoLoaded) {
-                          if (state.activeIsStarred == true) title = 'Starred';
-                          else if (state.activeIsDone == true) title = 'Completed';
+                          if (state.activeIsStarred == true) {
+                            title = 'Starred';
+                          } else if (state.activeIsDone == true) title = 'Completed';
                           else if (state.activeIsDone == false) title = 'Active';
                           else if (state.activeCategoryId != null) {
                             final cat = state.categories
