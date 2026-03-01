@@ -7,7 +7,6 @@ import 'package:todo/src/bloc/todo_event.dart';
 import 'package:todo/src/core/db/db_helpher.dart';
 import 'package:todo/src/core/theme/app_theme.dart';
 import 'package:todo/src/view/Splash.dart';
-import 'package:todo/src/view/todo_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

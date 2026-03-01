@@ -7,7 +7,6 @@ abstract class TodoEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-// ── LOAD / FILTER ────────────────────────────────────────────────────────────
 class LoadTodos extends TodoEvent {
   final int? categoryId;
   final bool? isDone;
@@ -29,7 +28,6 @@ class SearchTodos extends TodoEvent {
 
 class LoadStats extends TodoEvent {}
 
-// ── CRUD TODOS ───────────────────────────────────────────────────────────────
 class AddTodo extends TodoEvent {
   final Todo todo;
   AddTodo(this.todo);
@@ -84,7 +82,6 @@ class ToggleSubtask extends TodoEvent {
   List<Object?> get props => [subtaskId, isDone, parentTodoId];
 }
 
-// ── CATEGORIES ───────────────────────────────────────────────────────────────
 class LoadCategories extends TodoEvent {}
 
 class AddCategory extends TodoEvent {
@@ -103,7 +100,6 @@ class DeleteCategory extends TodoEvent {
   List<Object?> get props => [id];
 }
 
-// ── UI STATE ─────────────────────────────────────────────────────────────────
 class SetFilter extends TodoEvent {
   final int? categoryId;
   final bool? isDone;

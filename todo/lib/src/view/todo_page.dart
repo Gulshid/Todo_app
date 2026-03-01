@@ -79,9 +79,16 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.error_outline, size: 48, color: Color(0xFFEF4444)),
+                          const Icon(
+                            Icons.error_outline,
+                            size: 48,
+                            color: Color(0xFFEF4444),
+                          ),
                           const SizedBox(height: 12),
-                          Text(state.message, style: theme.textTheme.bodyMedium),
+                          Text(
+                            state.message,
+                            style: theme.textTheme.bodyMedium,
+                          ),
                         ],
                       ),
                     );
@@ -105,7 +112,10 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
         child: FloatingActionButton.extended(
           onPressed: _openAddTodo,
           icon: const Icon(Icons.add_rounded),
-          label: const Text('New Task', style: TextStyle(fontWeight: FontWeight.w600)),
+          label: const Text(
+            'New Task',
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
         ),
       ),
     );
@@ -128,7 +138,9 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
                       onPressed: () => Scaffold.of(ctx).openDrawer(),
                       icon: const Icon(Icons.menu_rounded),
                       style: IconButton.styleFrom(
-                        backgroundColor: isDark ? const Color(0xFF1A1A2E) : Colors.white,
+                        backgroundColor: isDark
+                            ? const Color(0xFF1A1A2E)
+                            : Colors.white,
                       ),
                     ),
                   ),
@@ -140,8 +152,10 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
                         if (state is TodoLoaded) {
                           if (state.activeIsStarred == true) {
                             title = 'Starred';
-                          } else if (state.activeIsDone == true) title = 'Completed';
-                          else if (state.activeIsDone == false) title = 'Active';
+                          } else if (state.activeIsDone == true)
+                            title = 'Completed';
+                          else if (state.activeIsDone == false)
+                            title = 'Active';
                           else if (state.activeCategoryId != null) {
                             final cat = state.categories
                                 .where((c) => c.id == state.activeCategoryId)
@@ -151,7 +165,9 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
                         }
                         return Text(
                           title,
-                          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
                         );
                       },
                     ),
@@ -163,7 +179,9 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
                     },
                     icon: const Icon(Icons.search_rounded),
                     style: IconButton.styleFrom(
-                      backgroundColor: isDark ? const Color(0xFF1A1A2E) : Colors.white,
+                      backgroundColor: isDark
+                          ? const Color(0xFF1A1A2E)
+                          : Colors.white,
                     ),
                   ),
                   const SizedBox(width: 4),
@@ -228,9 +246,16 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
           value: 'delete_completed',
           child: Row(
             children: [
-              Icon(Icons.delete_sweep_outlined, color: Color(0xFFEF4444), size: 18),
+              Icon(
+                Icons.delete_sweep_outlined,
+                color: Color(0xFFEF4444),
+                size: 18,
+              ),
               SizedBox(width: 8),
-              Text('Delete Completed', style: TextStyle(color: Color(0xFFEF4444))),
+              Text(
+                'Delete Completed',
+                style: TextStyle(color: Color(0xFFEF4444)),
+              ),
             ],
           ),
         ),
@@ -238,18 +263,18 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildMainContent(BuildContext context, TodoLoaded state, bool isDark) {
+  Widget _buildMainContent(
+    BuildContext context,
+    TodoLoaded state,
+    bool isDark,
+  ) {
     return CustomScrollView(
       slivers: [
         // Stats Dashboard
-        SliverToBoxAdapter(
-          child: _buildStatsSection(context, state, isDark),
-        ),
+        SliverToBoxAdapter(child: _buildStatsSection(context, state, isDark)),
 
         // Filter chips
-        SliverToBoxAdapter(
-          child: _buildFilterChips(context, state),
-        ),
+        SliverToBoxAdapter(child: _buildFilterChips(context, state)),
 
         // Task count header
         if (state.todos.isNotEmpty)
@@ -259,21 +284,21 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
               child: Text(
                 '${state.todos.length} ${state.todos.length == 1 ? 'task' : 'tasks'}',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).hintColor,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  color: Theme.of(context).hintColor,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ),
 
         // Todo list
         if (state.todos.isEmpty)
-          SliverFillRemaining(
-            child: _buildEmptyState(context, state),
-          )
+          SliverFillRemaining(child: _buildEmptyState(context, state))
         else
           SliverPadding(
-            padding: EdgeInsets.symmetric(horizontal: 16.w).copyWith(bottom: 100.h),
+            padding: EdgeInsets.symmetric(
+              horizontal: 16.w,
+            ).copyWith(bottom: 100.h),
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
                 (ctx, i) => TodoItemCard(todo: state.todos[i]),
@@ -285,7 +310,11 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildStatsSection(BuildContext context, TodoLoaded state, bool isDark) {
+  Widget _buildStatsSection(
+    BuildContext context,
+    TodoLoaded state,
+    bool isDark,
+  ) {
     final theme = Theme.of(context);
     final stats = state.stats;
 
@@ -344,12 +373,15 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
                         strokeWidth: 3,
                       ),
                       Center(
-                        child: Text(
-                          '${(((stats['done'] ?? 0) / (stats['total'] ?? 1)) * 100).round()}%',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 6, bottom: 5),
+                          child: Text(
+                            '${(((stats['done'] ?? 0) / (stats['total'] ?? 1)) * 100).round()}%',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
@@ -362,11 +394,23 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
           const SizedBox(height: 16),
           Row(
             children: [
-              _StatCard(value: '${stats['total'] ?? 0}', label: 'Total', color: Colors.white),
+              _StatCard(
+                value: '${stats['total'] ?? 0}',
+                label: 'Total',
+                color: Colors.white,
+              ),
               const SizedBox(width: 8),
-              _StatCard(value: '${stats['done'] ?? 0}', label: 'Done', color: const Color(0xFF34D399)),
+              _StatCard(
+                value: '${stats['done'] ?? 0}',
+                label: 'Done',
+                color: const Color(0xFF34D399),
+              ),
               const SizedBox(width: 8),
-              _StatCard(value: '${stats['today'] ?? 0}', label: 'Today', color: const Color(0xFFFBBF24)),
+              _StatCard(
+                value: '${stats['today'] ?? 0}',
+                label: 'Today',
+                color: const Color(0xFFFBBF24),
+              ),
               const SizedBox(width: 8),
               _StatCard(
                 value: '${stats['overdue'] ?? 0}',
@@ -388,7 +432,10 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
         children: [
           _FilterChip(
             label: 'All',
-            isSelected: state.activeCategoryId == null && state.activeIsDone == null && state.activeIsStarred == null,
+            isSelected:
+                state.activeCategoryId == null &&
+                state.activeIsDone == null &&
+                state.activeIsStarred == null,
             onTap: () => context.read<TodoBloc>().add(SetFilter()),
           ),
           const SizedBox(width: 8),
@@ -413,7 +460,8 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
             icon: Icons.star_outline_rounded,
             isSelected: state.activeIsStarred == true,
             color: const Color(0xFFF59E0B),
-            onTap: () => context.read<TodoBloc>().add(SetFilter(isStarred: true)),
+            onTap: () =>
+                context.read<TodoBloc>().add(SetFilter(isStarred: true)),
           ),
         ],
       ),
@@ -445,7 +493,10 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
           Text(
             message,
             textAlign: TextAlign.center,
-            style: theme.textTheme.bodyLarge?.copyWith(color: theme.hintColor, height: 1.5),
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: theme.hintColor,
+              height: 1.5,
+            ),
           ),
         ],
       ),
@@ -457,13 +508,17 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
     final isDark = theme.brightness == Brightness.dark;
 
     return Drawer(
-      backgroundColor: isDark ? const Color(0xFF0F0F1A) : const Color(0xFFF8F9FF),
+      backgroundColor: isDark
+          ? const Color(0xFF0F0F1A)
+          : const Color(0xFFF8F9FF),
       child: SafeArea(
         child: BlocBuilder<TodoBloc, TodoState>(
           builder: (context, state) {
             final cats = state is TodoLoaded ? state.categories : <Category>[];
             final stats = state is TodoLoaded ? state.stats : <String, int>{};
-            final activeCategory = state is TodoLoaded ? state.activeCategoryId : null;
+            final activeCategory = state is TodoLoaded
+                ? state.activeCategoryId
+                : null;
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -483,16 +538,24 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
                           ),
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        child: const Icon(Icons.check_rounded, color: Colors.white, size: 28),
+                        child: const Icon(
+                          Icons.check_rounded,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                       ),
                       const SizedBox(height: 12),
                       Text(
                         'TaskMaster',
-                        style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                       Text(
                         '${stats['total'] ?? 0} tasks',
-                        style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.hintColor,
+                        ),
                       ),
                     ],
                   ),
@@ -502,7 +565,10 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
 
                 // Smart Lists
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
                   child: Text(
                     'SMART LISTS',
                     style: theme.textTheme.labelSmall?.copyWith(
@@ -515,7 +581,8 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
                   icon: Icons.all_inbox_rounded,
                   label: 'All Tasks',
                   count: stats['total'],
-                  isSelected: state is TodoLoaded &&
+                  isSelected:
+                      state is TodoLoaded &&
                       state.activeCategoryId == null &&
                       state.activeIsDone == null &&
                       state.activeIsStarred == null,
@@ -539,7 +606,8 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
                   icon: Icons.star_rounded,
                   label: 'Starred',
                   color: const Color(0xFFF59E0B),
-                  isSelected: state is TodoLoaded && state.activeIsStarred == true,
+                  isSelected:
+                      state is TodoLoaded && state.activeIsStarred == true,
                   onTap: () {
                     context.read<TodoBloc>().add(SetFilter(isStarred: true));
                     Navigator.pop(context);
@@ -574,7 +642,10 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
 
                 // Categories
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
                   child: Row(
                     children: [
                       Text(
@@ -587,7 +658,11 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
                       const Spacer(),
                       GestureDetector(
                         onTap: () => _showAddCategoryDialog(context),
-                        child: Icon(Icons.add_rounded, size: 18, color: theme.hintColor),
+                        child: Icon(
+                          Icons.add_rounded,
+                          size: 18,
+                          color: theme.hintColor,
+                        ),
                       ),
                     ],
                   ),
@@ -597,17 +672,25 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
                   child: ListView(
                     padding: EdgeInsets.zero,
                     children: cats
-                        .map((cat) => _DrawerItem(
-                              icon: IconData(cat.iconCodePoint, fontFamily: 'MaterialIcons'),
-                              label: cat.name,
-                              color: cat.color,
-                              isSelected: activeCategory == cat.id,
-                              onTap: () {
-                                context.read<TodoBloc>().add(SetFilter(categoryId: cat.id));
-                                Navigator.pop(context);
-                              },
-                              onLongPress: () => _confirmDeleteCategory(context, cat),
-                            ))
+                        .map(
+                          (cat) => _DrawerItem(
+                            icon: IconData(
+                              cat.iconCodePoint,
+                              fontFamily: 'MaterialIcons',
+                            ),
+                            label: cat.name,
+                            color: cat.color,
+                            isSelected: activeCategory == cat.id,
+                            onTap: () {
+                              context.read<TodoBloc>().add(
+                                SetFilter(categoryId: cat.id),
+                              );
+                              Navigator.pop(context);
+                            },
+                            onLongPress: () =>
+                                _confirmDeleteCategory(context, cat),
+                          ),
+                        )
                         .toList(),
                   ),
                 ),
@@ -615,7 +698,9 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
                 // Theme toggle
                 Divider(color: theme.dividerColor.withOpacity(0.3), height: 1),
                 ListTile(
-                  leading: Icon(isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded),
+                  leading: Icon(
+                    isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                  ),
                   title: Text(isDark ? 'Light Mode' : 'Dark Mode'),
                   onTap: () {
                     Navigator.pop(context);
@@ -636,21 +721,37 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
     int selectedIcon = Icons.folder.codePoint;
 
     final colors = [
-      0xFF6366F1, 0xFF0EA5E9, 0xFF10B981, 0xFFF43F5E,
-      0xFFF59E0B, 0xFF8B5CF6, 0xFFEC4899, 0xFF14B8A6,
+      0xFF6366F1,
+      0xFF0EA5E9,
+      0xFF10B981,
+      0xFFF43F5E,
+      0xFFF59E0B,
+      0xFF8B5CF6,
+      0xFFEC4899,
+      0xFF14B8A6,
     ];
     final icons = [
-      Icons.folder.codePoint, Icons.work.codePoint, Icons.person.codePoint,
-      Icons.shopping_cart.codePoint, Icons.favorite.codePoint, Icons.school.codePoint,
-      Icons.attach_money.codePoint, Icons.fitness_center.codePoint,
+      Icons.folder.codePoint,
+      Icons.work.codePoint,
+      Icons.person.codePoint,
+      Icons.shopping_cart.codePoint,
+      Icons.favorite.codePoint,
+      Icons.school.codePoint,
+      Icons.attach_money.codePoint,
+      Icons.fitness_center.codePoint,
     ];
 
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text('New Category', style: TextStyle(fontWeight: FontWeight.w700)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            'New Category',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -659,66 +760,89 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
                 decoration: const InputDecoration(hintText: 'Category name'),
               ),
               const SizedBox(height: 16),
-              const Text('Color', style: TextStyle(fontWeight: FontWeight.w600)),
+              const Text(
+                'Color',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
-                children: colors.map((c) => GestureDetector(
-                  onTap: () => setDialogState(() => selectedColor = c),
-                  child: Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      color: Color(c),
-                      shape: BoxShape.circle,
-                      border: selectedColor == c
-                          ? Border.all(color: Colors.white, width: 2)
-                          : null,
-                      boxShadow: selectedColor == c
-                          ? [BoxShadow(color: Color(c).withOpacity(0.5), blurRadius: 4)]
-                          : null,
-                    ),
-                  ),
-                )).toList(),
+                children: colors
+                    .map(
+                      (c) => GestureDetector(
+                        onTap: () => setDialogState(() => selectedColor = c),
+                        child: Container(
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            color: Color(c),
+                            shape: BoxShape.circle,
+                            border: selectedColor == c
+                                ? Border.all(color: Colors.white, width: 2)
+                                : null,
+                            boxShadow: selectedColor == c
+                                ? [
+                                    BoxShadow(
+                                      color: Color(c).withOpacity(0.5),
+                                      blurRadius: 4,
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
               ),
               const SizedBox(height: 16),
               const Text('Icon', style: TextStyle(fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
-                children: icons.map((ic) => GestureDetector(
-                  onTap: () => setDialogState(() => selectedIcon = ic),
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: selectedIcon == ic
-                          ? Color(selectedColor).withOpacity(0.2)
-                          : Colors.grey.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      IconData(ic, fontFamily: 'MaterialIcons'),
-                      size: 18,
-                      color: selectedIcon == ic ? Color(selectedColor) : Colors.grey,
-                    ),
-                  ),
-                )).toList(),
+                children: icons
+                    .map(
+                      (ic) => GestureDetector(
+                        onTap: () => setDialogState(() => selectedIcon = ic),
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: selectedIcon == ic
+                                ? Color(selectedColor).withOpacity(0.2)
+                                : Colors.grey.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            IconData(ic, fontFamily: 'MaterialIcons'),
+                            size: 18,
+                            color: selectedIcon == ic
+                                ? Color(selectedColor)
+                                : Colors.grey,
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
               ),
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
             ElevatedButton(
               onPressed: () {
                 if (nameController.text.trim().isEmpty) return;
-                context.read<TodoBloc>().add(AddCategory(
-                  Category(
-                    name: nameController.text.trim(),
-                    colorValue: selectedColor,
-                    iconCodePoint: selectedIcon,
+                context.read<TodoBloc>().add(
+                  AddCategory(
+                    Category(
+                      name: nameController.text.trim(),
+                      colorValue: selectedColor,
+                      iconCodePoint: selectedIcon,
+                    ),
                   ),
-                ));
+                );
                 Navigator.pop(ctx);
               },
               child: const Text('Create'),
@@ -735,16 +859,24 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Delete Category'),
-        content: Text('Delete "${cat.name}"? Tasks in this category will keep their data.'),
+        content: Text(
+          'Delete "${cat.name}"? Tasks in this category will keep their data.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () {
               context.read<TodoBloc>().add(DeleteCategory(cat.id!));
               Navigator.pop(ctx);
               Navigator.pop(context);
             },
-            child: const Text('Delete', style: TextStyle(color: Color(0xFFEF4444))),
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: Color(0xFFEF4444)),
+            ),
           ),
         ],
       ),
@@ -757,15 +889,23 @@ class _TodoPageState extends State<TodoPage> with TickerProviderStateMixin {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Delete Completed'),
-        content: const Text('This will permanently delete all completed tasks.'),
+        content: const Text(
+          'This will permanently delete all completed tasks.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () {
               context.read<TodoBloc>().add(DeleteCompleted());
               Navigator.pop(ctx);
             },
-            child: const Text('Delete', style: TextStyle(color: Color(0xFFEF4444))),
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: Color(0xFFEF4444)),
+            ),
           ),
         ],
       ),
@@ -787,7 +927,11 @@ class _StatCard extends StatelessWidget {
   final String label;
   final Color color;
 
-  const _StatCard({required this.value, required this.label, required this.color});
+  const _StatCard({
+    required this.value,
+    required this.label,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -802,12 +946,19 @@ class _StatCard extends StatelessWidget {
           children: [
             Text(
               value,
-              style: TextStyle(color: color, fontSize: 20, fontWeight: FontWeight.w800),
+              style: TextStyle(
+                color: color,
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+              ),
             ),
             const SizedBox(height: 2),
             Text(
               label,
-              style: TextStyle(color: Colors.white.withOpacity(0.75), fontSize: 11),
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.75),
+                fontSize: 11,
+              ),
             ),
           ],
         ),
@@ -848,10 +999,18 @@ class _FilterChip extends StatelessWidget {
               : (isDark ? const Color(0xFF1A1A2E) : Colors.white),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? activeColor : theme.dividerColor.withOpacity(0.3),
+            color: isSelected
+                ? activeColor
+                : theme.dividerColor.withOpacity(0.3),
           ),
           boxShadow: isSelected
-              ? [BoxShadow(color: activeColor.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 2))]
+              ? [
+                  BoxShadow(
+                    color: activeColor.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
               : [],
         ),
         child: Row(
@@ -868,7 +1027,9 @@ class _FilterChip extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? Colors.white : theme.textTheme.bodyMedium?.color,
+                color: isSelected
+                    ? Colors.white
+                    : theme.textTheme.bodyMedium?.color,
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
@@ -910,7 +1071,9 @@ class _DrawerItem extends StatelessWidget {
         duration: const Duration(milliseconds: 150),
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
         decoration: BoxDecoration(
-          color: isSelected ? activeColor.withOpacity(0.12) : Colors.transparent,
+          color: isSelected
+              ? activeColor.withOpacity(0.12)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
         child: ListTile(
@@ -933,7 +1096,10 @@ class _DrawerItem extends StatelessWidget {
           ),
           trailing: count != null
               ? Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: activeColor.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(10),

@@ -1,10 +1,12 @@
+// ignore_for_file: unused_field
+
 import 'package:flutter/material.dart';
 
 class AppTheme {
   AppTheme._();
 
-  static const _primaryColor = Color(0xFF6366F1); // Indigo
-  static const _secondaryColor = Color(0xFF0EA5E9); // Sky Blue
+  static const _primaryColor = Color(0xFF6366F1); 
+  static const _secondaryColor = Color(0xFF0EA5E9); 
 
   static ThemeData get lightTheme => ThemeData(
         useMaterial3: true,
